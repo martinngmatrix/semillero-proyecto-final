@@ -1,0 +1,152 @@
+openapi: 3.0.3
+info:
+  title: QuickTicket - Motor de Reservas de Alta Concurrencia (PoC)
+  description: |
+    API correspondiente al Microservicio de Reservas de QuickTicket.
+    Diseñado bajo Arquitectura Hexagonal y optimizado para soportar picos masivos de concurrencia mediante bloqueos efímeros en Redis y comunicación reactiva/asíncrona vía Apache Kafka.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api
+    description: Servidor de Desarrollo Local (PoC)
+paths:
+  /reservations:
+    post:
+      summary: Crear una reserva temporal de asiento
+      description: |
+        Valida la disponibilidad del asiento de forma atómica en memoria (Redis). 
+        Si está libre, genera un bloqueo con un tiempo de vida (TTL) de 10 minutos 
+        y emite el evento `AsientoBloqueado` al Broker de Kafka.
+      operationId: createReservation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReservationRequest'
+      responses:
+        '201':
+          description: Reserva creada y asiento bloqueado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          description: Petición inválida (Payload mal formado o datos faltantes).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflicto de Concurrencia. El asiento ya se encuentra reservado o comprado por otro usuario.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor o fallo en la infraestructura.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /health:
+    get:
+      summary: Health Check del Servicio
+      description: Devuelve el estado operativo actual del microservicio.
+      responses:
+        '200':
+          description: El servicio está operativo.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "UP"
+                  service:
+                    type: string
+                    example: "quickticket-reservations"
+
+components:
+  schemas:
+    CreateReservationRequest:
+      type: object
+      required:
+        - eventId
+        - userId
+        - seatLocation
+        - seatPrice
+      properties:
+        eventId:
+          type: string
+          description: Identificador único del evento o concierto.
+          example: "evt_concert_2026"
+        userId:
+          type: string
+          description: Identificador único del cliente que realiza la reserva.
+          example: "usr_buyer_99"
+        seatLocation:
+          type: string
+          description: Código del asiento o localidad a reservar.
+          example: "VIP-A12"
+        seatPrice:
+          type: number
+          format: float
+          description: Precio asignado al asiento reservado.
+          example: 150.00
+
+    StandardResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Asiento bloqueado temporalmente por 10 minutos."
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              example: "res_1779744840288_f86ve"
+            eventId:
+              type: string
+              example: "evt_concert_2026"
+            userId:
+              type: string
+              example: "usr_buyer_99"
+            seatLocation:
+              type: string
+              example: "VIP-A12"
+            seatPrice:
+              type: number
+              example: 150
+            status:
+              type: string
+              example: "PENDING"
+            createdAt:
+              type: string
+              format: date-time
+              example: "2026-05-25T21:34:00.290Z"
+            expiresAt:
+              type: string
+              format: date-time
+              example: "2026-05-25T21:44:00.288Z"
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: "SEAT_ALREADY_RESERVED"
+            message:
+              type: string
+              example: "El asiento solicitado ya cuenta con una reserva activa."

@@ -1,0 +1,53 @@
+services:
+  reservations-service:
+      build:
+        context: ./poc-reservations-service
+        dockerfile: Dockerfile
+      container_name: qt-reservations-service
+      ports:
+        - "3000:3000"
+      environment:
+        - REDIS_URL=redis://redis-cache:6379
+        - KAFKA_BROKERS=kafka-broker:29092
+      depends_on:
+        - redis-cache
+        - kafka-broker
+      networks:
+        - quickticket-network
+  redis-cache:
+    image: redis:7-alpine
+    container_name: qt-redis-reservas
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - quickticket-network
+
+  kafka-broker:
+    image: apache/kafka:latest
+    container_name: qt-kafka-broker
+    ports:
+      - "9092:9092"
+    environment:
+      - KAFKA_NODE_ID=1
+      - KAFKA_PROCESS_ROLES=broker,controller
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@localhost:9093
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka-broker:29092,PLAINTEXT_HOST://127.0.0.1:9092
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
+    networks:
+      - quickticket-network
+
+volumes:
+  redis_data:
+
+networks:
+  quickticket-network:
+    driver: bridge
