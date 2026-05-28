@@ -57,9 +57,11 @@ Definición de fronteras lógicas para desacoplar responsabilidades críticas de
 
 ## 6. Resiliencia y Tolerancia a Fallos
 
-* **Retry Automático:** Reintentos controlados ante fallas temporales de comunicación con GlobalPay.
-* **Dead Letter Queue (DLQ):** Los mensajes que no puedan procesarse se envían a una cola de errores para auditoría y recuperación.
-* **Liberación Automática:** Si el pago falla o expira, el lock temporal del asiento se elimina automáticamente mediante TTL en Redis.
+### Patrón Aplicado: Retry + Dead Letter Queue (DLQ)
+
+* **Retry con Exponential Backoff:** Ante fallos temporales de comunicación con GlobalPay, el servicio de pagos ejecuta reintentos inmediatos con tiempos de espera crecientes para absorber errores transitorios sin saturar la pasarela externa.
+* **Retry Topic Asíncrono:** Si los reintentos locales fallan, el evento se redirige a un tópico secundario (`payments-retry`) para ser reprocesado posteriormente sin bloquear el flujo principal.
+* **Dead Letter Queue (DLQ):** Los eventos que superan el máximo de reintentos o presentan errores no recuperables se envían a un tópico de errores (`payments-dlq`) para auditoría y recuperación controlada.
 
 ---
 
