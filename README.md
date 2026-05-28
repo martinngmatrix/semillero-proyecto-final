@@ -8,7 +8,7 @@
 
 ### Limitaciones Técnicas del Monolito Tradicional
 
-* **Cuello de Botella Transaccional:** Búsqueda, bloqueo temporal y pago comparten una única base de datos relacional.
+* **Cuello de Botella Transaccional:** Búsqueda de evento, bloqueo temporal de asientos y pago comparten una única base de datos relacional.
 * **Degradación por Terceros:** La integración síncrona con GlobalPay genera timeouts prolongados bajo alta demanda.
 * **Efecto Cascada:** La lentitud en pagos bloquea conexiones y afecta incluso la navegación del catálogo de eventos.
 
