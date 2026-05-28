@@ -21,8 +21,8 @@ Definición de fronteras lógicas para desacoplar responsabilidades críticas de
 ![Event Storming](./docs/imgs/Bounded%20Contexts.png)
 
 * **Gestión de Reservas:** Administración de asientos y bloqueos temporales.
-* **Gestión de Pagos:** Generación y seguimiento de órdenes de pago.
-* **Gestión de Notificaciones:** Envío de correos y boletos PDF.
+* **Gestión de Pagos:** Generación de ordenes de pago y ejecución de pagos en GlobalPay.
+* **Gestión de Notificaciones:** Envío de correos y boletos de confirmación.
 
 ---
 
