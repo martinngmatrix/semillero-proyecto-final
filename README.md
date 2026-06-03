@@ -86,7 +86,7 @@ facilitando mantenibilidad, pruebas y evolución futura del sistema.
 ## 7. Beneficios de la Solución
 
 * **Mayor Disponibilidad:** Las fallas o lentitud de la pasarela de pagos no afectan el flujo principal de reservas.
-* **Escalabilidad Independiente:** El servicio de reservas puede escalar de forma aislada bajo alta demanda.
+* **Escalabilidad Independiente:** Cada servicio puede escalar de forma aislada bajo alta demanda.
 * **Procesamiento Asíncrono:** Kafka desacopla reservas y pagos, absorbiendo picos de carga sin bloquear el flujo principal.
 * **Mejor Concurrencia:** Redis permite manejar bloqueos temporales de asientos con baja latencia.
 * **Mantenibilidad:** Separación clara de responsabilidades mediante servicios desacoplados.
