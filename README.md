@@ -55,17 +55,7 @@ Definición de fronteras lógicas para desacoplar responsabilidades críticas de
 
 ---
 
-## 6. Resiliencia y Tolerancia a Fallos
-
-### Patrón Aplicado: Retry + Dead Letter Queue (DLQ)
-
-* **Retry con Exponential Backoff:** Ante fallos temporales de comunicación con GlobalPay, el servicio de pagos ejecuta reintentos inmediatos con tiempos de espera crecientes para absorber errores transitorios sin saturar la pasarela externa.
-* **Retry Topic Asíncrono:** Si los reintentos locales fallan, el evento se redirige a un tópico secundario (`payments-retry`) para ser reprocesado posteriormente sin bloquear el flujo principal.
-* **Dead Letter Queue (DLQ):** Los eventos que superan el máximo de reintentos o presentan errores no recuperables se envían a un tópico de errores (`payments-dlq`) para auditoría y recuperación controlada.
-
----
-
-## 7. Prueba de Concepto (PoC) Local
+## 6. Prueba de Concepto (PoC) Local
 
 La PoC desarrollada demuestra el desacoplamiento entre reservas y pagos utilizando Kafka, Redis y PostgreSQL ejecutándose localmente mediante Docker Compose.
 
@@ -93,7 +83,7 @@ facilitando mantenibilidad, pruebas y evolución futura del sistema.
 * Redis
 * Servicio de reservas
 
-## 8. Beneficios de la Solución
+## 7. Beneficios de la Solución
 
 * **Mayor Disponibilidad:** Las fallas o lentitud de la pasarela de pagos no afectan el flujo principal de reservas.
 * **Escalabilidad Independiente:** El servicio de reservas puede escalar de forma aislada bajo alta demanda.
